@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
 import { getAllBooks, createBook, updateBook, deleteBook } from '@/lib/books';
 
 export async function GET() {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const books = await getAllBooks();
     return NextResponse.json(books);
 }
 
 export async function POST(req: NextRequest) {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { title, subtitle, isbn10, isbn13, authorId, publisherId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
 
@@ -35,11 +24,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { id, title, subtitle, isbn10, isbn13, authorId, publisherId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
 
@@ -60,11 +44,6 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const { id } = await req.json();
 
     if (!id) {

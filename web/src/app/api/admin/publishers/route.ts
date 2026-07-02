@@ -1,23 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isAuthenticated } from '@/lib/auth';
 import { getAllPublishers, createPublisher, updatePublisher, deletePublisher } from '@/lib/publishers';
 
 export async function GET() {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const publishers = await getAllPublishers();
     return NextResponse.json(publishers);
 }
 
 export async function POST(req: NextRequest) {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const { name, website, email, phone, address } = await req.json();
 
     if (!name) {
@@ -34,11 +23,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const { id, name, website, email, phone, address } = await req.json();
 
     if (!id || !name) {
@@ -58,11 +42,6 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-    const authed = await isAuthenticated();
-    if (!authed) {
-        return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
-    }
-
     const { id } = await req.json();
 
     if (!id) {
