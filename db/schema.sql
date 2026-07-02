@@ -7,9 +7,14 @@
 -- \c authcattkr;
 
 -- ============================================================
+-- Drop everything and start fresh
+-- ============================================================
+DROP SCHEMA IF EXISTS tracker CASCADE;
+
+-- ============================================================
 -- Schema
 -- ============================================================
-CREATE SCHEMA IF NOT EXISTS tracker;
+CREATE SCHEMA tracker;
 
 -- ============================================================
 -- Extensions
@@ -19,7 +24,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================================
 -- Authors
 -- ============================================================
-CREATE TABLE IF NOT EXISTS tracker.authors (
+CREATE TABLE tracker.authors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     pen_name VARCHAR(200) NOT NULL,
     specialty VARCHAR(255),
@@ -31,7 +36,7 @@ CREATE TABLE IF NOT EXISTS tracker.authors (
 -- ============================================================
 -- Publishers
 -- ============================================================
-CREATE TABLE IF NOT EXISTS tracker.publishers (
+CREATE TABLE tracker.publishers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     website VARCHAR(255),
@@ -45,7 +50,7 @@ CREATE TABLE IF NOT EXISTS tracker.publishers (
 -- ============================================================
 -- Genres
 -- ============================================================
-CREATE TABLE IF NOT EXISTS tracker.genres (
+CREATE TABLE tracker.genres (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(100) NOT NULL UNIQUE,
     description TEXT
@@ -54,7 +59,7 @@ CREATE TABLE IF NOT EXISTS tracker.genres (
 -- ============================================================
 -- Books
 -- ============================================================
-CREATE TABLE IF NOT EXISTS tracker.books (
+CREATE TABLE tracker.books (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(500) NOT NULL,
     subtitle VARCHAR(500),
@@ -75,7 +80,7 @@ CREATE TABLE IF NOT EXISTS tracker.books (
 -- ============================================================
 -- eBooks (extends a book with digital-specific metadata)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS tracker.ebooks (
+CREATE TABLE tracker.ebooks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     book_id UUID NOT NULL UNIQUE REFERENCES tracker.books(id) ON DELETE CASCADE,
     file_format VARCHAR(20) NOT NULL,  -- e.g. EPUB, PDF, MOBI, AZW3
@@ -89,7 +94,7 @@ CREATE TABLE IF NOT EXISTS tracker.ebooks (
 -- ============================================================
 -- Book ↔ Genre (many-to-many)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS tracker.book_genres (
+CREATE TABLE tracker.book_genres (
     book_id UUID NOT NULL REFERENCES tracker.books(id) ON DELETE CASCADE,
     genre_id UUID NOT NULL REFERENCES tracker.genres(id) ON DELETE CASCADE,
     PRIMARY KEY (book_id, genre_id)
@@ -98,11 +103,11 @@ CREATE TABLE IF NOT EXISTS tracker.book_genres (
 -- ============================================================
 -- Indexes
 -- ============================================================
-CREATE INDEX IF NOT EXISTS idx_books_author ON tracker.books(author_id);
-CREATE INDEX IF NOT EXISTS idx_books_publisher ON tracker.books(publisher_id);
-CREATE INDEX IF NOT EXISTS idx_books_title ON tracker.books(title);
-CREATE INDEX IF NOT EXISTS idx_ebooks_book ON tracker.ebooks(book_id);
-CREATE INDEX IF NOT EXISTS idx_authors_pen_name ON tracker.authors(pen_name);
+CREATE INDEX idx_books_author ON tracker.books(author_id);
+CREATE INDEX idx_books_publisher ON tracker.books(publisher_id);
+CREATE INDEX idx_books_title ON tracker.books(title);
+CREATE INDEX idx_ebooks_book ON tracker.ebooks(book_id);
+CREATE INDEX idx_authors_pen_name ON tracker.authors(pen_name);
 
 -- ============================================================
 -- Updated_at trigger function

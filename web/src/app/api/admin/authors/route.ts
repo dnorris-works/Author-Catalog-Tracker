@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllAuthors, createAuthor, updateAuthor, deleteAuthor } from '@/lib/authors';
 
 export async function GET() {
-    const authors = await getAllAuthors();
-    return NextResponse.json(authors);
+    try {
+        const authors = await getAllAuthors();
+        return NextResponse.json(authors);
+    } catch (err: unknown) {
+        console.error('Get authors error:', err);
+        const message = err instanceof Error ? err.message : 'Something went wrong.';
+        return NextResponse.json({ error: message }, { status: 500 });
+    }
 }
 
 export async function POST(req: NextRequest) {
@@ -18,7 +24,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(author);
     } catch (err: unknown) {
         console.error('Create author error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        const message = err instanceof Error ? err.message : 'Something went wrong.';
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
