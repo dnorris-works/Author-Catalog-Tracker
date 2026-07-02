@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "heroku-postbuild": "cd web && npm install && npm run build",
+    "heroku-postbuild": "cd web && npm install --include=dev && npm run build",
     "start": "npm run start --prefix web",
     "dev": "npm run dev --prefix web"
   },
