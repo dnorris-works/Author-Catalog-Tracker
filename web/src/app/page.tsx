@@ -34,6 +34,7 @@ export default function Home() {
           title="Authors"
           description="Manage author profiles with bios, pen names, and contact information."
           icon="✍️"
+          href="/authors"
         />
         <FeatureCard
           title="Books & eBooks"
@@ -54,13 +55,15 @@ function FeatureCard({
   title,
   description,
   icon,
+  href,
 }: {
   title: string;
   description: string;
   icon: string;
+  href?: string;
 }) {
-  return (
-    <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
+  const content = (
+    <>
       <div className="text-3xl mb-3" aria-hidden="true">
         {icon}
       </div>
@@ -70,6 +73,23 @@ function FeatureCard({
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         {description}
       </p>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
+      {content}
     </div>
   );
 }
