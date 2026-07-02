@@ -4,32 +4,23 @@ import { useState, useEffect } from 'react';
 
 type Author = {
     id: string;
-    firstName: string;
-    lastName: string;
-    penName: string | null;
-    bio: string | null;
-    email: string | null;
+    penName: string;
+    specialty: string | null;
     website: string | null;
 };
 
 type AuthorForm = {
     id: string | null;
-    firstName: string;
-    lastName: string;
     penName: string;
-    email: string;
+    specialty: string;
     website: string;
-    bio: string;
 };
 
 const emptyForm: AuthorForm = {
     id: null,
-    firstName: '',
-    lastName: '',
     penName: '',
-    email: '',
+    specialty: '',
     website: '',
-    bio: '',
 };
 
 export default function AuthorsPage() {
@@ -59,12 +50,9 @@ export default function AuthorsPage() {
     function startEdit(author: Author) {
         setEditing({
             id: author.id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            penName: author.penName ?? '',
-            email: author.email ?? '',
+            penName: author.penName,
+            specialty: author.specialty ?? '',
             website: author.website ?? '',
-            bio: author.bio ?? '',
         });
         setError('');
         setSuccess('');
@@ -127,11 +115,9 @@ export default function AuthorsPage() {
                 )}
             </div>
 
-            {/* Status messages */}
             {error && <p className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</p>}
             {success && <p className="mb-4 text-sm text-green-600 dark:text-green-400">{success}</p>}
 
-            {/* Form */}
             {editing && (
                 <div className="mb-10 rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
                     <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">
@@ -139,52 +125,27 @@ export default function AuthorsPage() {
                     </h2>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label htmlFor="firstName" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                First Name *
-                            </label>
-                            <input
-                                id="firstName"
-                                type="text"
-                                required
-                                value={editing.firstName}
-                                onChange={(e) => setEditing({ ...editing, firstName: e.target.value })}
-                                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="lastName" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                Last Name *
-                            </label>
-                            <input
-                                id="lastName"
-                                type="text"
-                                required
-                                value={editing.lastName}
-                                onChange={(e) => setEditing({ ...editing, lastName: e.target.value })}
-                                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                            />
-                        </div>
-                        <div>
                             <label htmlFor="penName" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                Pen Name
+                                Pen Name *
                             </label>
                             <input
                                 id="penName"
                                 type="text"
+                                required
                                 value={editing.penName}
                                 onChange={(e) => setEditing({ ...editing, penName: e.target.value })}
                                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                Email
+                            <label htmlFor="specialty" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                                Specialty
                             </label>
                             <input
-                                id="email"
-                                type="email"
-                                value={editing.email}
-                                onChange={(e) => setEditing({ ...editing, email: e.target.value })}
+                                id="specialty"
+                                type="text"
+                                value={editing.specialty}
+                                onChange={(e) => setEditing({ ...editing, specialty: e.target.value })}
                                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
                             />
                         </div>
@@ -198,18 +159,6 @@ export default function AuthorsPage() {
                                 value={editing.website}
                                 onChange={(e) => setEditing({ ...editing, website: e.target.value })}
                                 placeholder="https://"
-                                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-                            />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <label htmlFor="bio" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
-                                Bio
-                            </label>
-                            <textarea
-                                id="bio"
-                                rows={4}
-                                value={editing.bio}
-                                onChange={(e) => setEditing({ ...editing, bio: e.target.value })}
                                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
                             />
                         </div>
@@ -232,7 +181,6 @@ export default function AuthorsPage() {
                 </div>
             )}
 
-            {/* Authors Table */}
             {authors.length === 0 && !editing ? (
                 <div className="text-center py-16 text-zinc-500 dark:text-zinc-400">
                     <p className="text-lg">No authors yet.</p>
@@ -244,9 +192,9 @@ export default function AuthorsPage() {
                         <table className="w-full text-left text-sm">
                             <thead>
                                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                                    <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Name</th>
                                     <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Pen Name</th>
-                                    <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Email</th>
+                                    <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Specialty</th>
+                                    <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Website</th>
                                     <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Actions</th>
                                 </tr>
                             </thead>
@@ -254,13 +202,17 @@ export default function AuthorsPage() {
                                 {authors.map((author) => (
                                     <tr key={author.id} className="border-b border-zinc-100 dark:border-zinc-800/50">
                                         <td className="py-3 px-2 text-zinc-900 dark:text-zinc-100">
-                                            {author.firstName} {author.lastName}
+                                            {author.penName}
                                         </td>
                                         <td className="py-3 px-2 text-zinc-600 dark:text-zinc-400">
-                                            {author.penName || '—'}
+                                            {author.specialty || '—'}
                                         </td>
                                         <td className="py-3 px-2 text-zinc-600 dark:text-zinc-400">
-                                            {author.email || '—'}
+                                            {author.website ? (
+                                                <a href={author.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                                    {author.website}
+                                                </a>
+                                            ) : '—'}
                                         </td>
                                         <td className="py-3 px-2">
                                             <button

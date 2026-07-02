@@ -7,14 +7,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-    const { firstName, lastName, penName, bio, email, website } = await req.json();
+    const { penName, specialty, website } = await req.json();
 
-    if (!firstName || !lastName) {
-        return NextResponse.json({ error: 'firstName and lastName are required.' }, { status: 400 });
+    if (!penName) {
+        return NextResponse.json({ error: 'penName is required.' }, { status: 400 });
     }
 
     try {
-        const author = await createAuthor({ firstName, lastName, penName, bio, email, website });
+        const author = await createAuthor({ penName, specialty, website });
         return NextResponse.json(author);
     } catch (err: unknown) {
         console.error('Create author error:', err);
@@ -23,14 +23,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { id, firstName, lastName, penName, bio, email, website } = await req.json();
+    const { id, penName, specialty, website } = await req.json();
 
-    if (!id || !firstName || !lastName) {
-        return NextResponse.json({ error: 'id, firstName, and lastName are required.' }, { status: 400 });
+    if (!id || !penName) {
+        return NextResponse.json({ error: 'id and penName are required.' }, { status: 400 });
     }
 
     try {
-        const author = await updateAuthor(id, { firstName, lastName, penName, bio, email, website });
+        const author = await updateAuthor(id, { penName, specialty, website });
         if (!author) {
             return NextResponse.json({ error: 'Author not found.' }, { status: 404 });
         }

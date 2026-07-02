@@ -21,11 +21,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================================
 CREATE TABLE IF NOT EXISTS tracker.authors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    pen_name VARCHAR(200),
-    bio TEXT,
-    email VARCHAR(255),
+    pen_name VARCHAR(200) NOT NULL,
+    specialty VARCHAR(255),
     website VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -105,7 +102,7 @@ CREATE INDEX IF NOT EXISTS idx_books_author ON tracker.books(author_id);
 CREATE INDEX IF NOT EXISTS idx_books_publisher ON tracker.books(publisher_id);
 CREATE INDEX IF NOT EXISTS idx_books_title ON tracker.books(title);
 CREATE INDEX IF NOT EXISTS idx_ebooks_book ON tracker.ebooks(book_id);
-CREATE INDEX IF NOT EXISTS idx_authors_last_name ON tracker.authors(last_name);
+CREATE INDEX IF NOT EXISTS idx_authors_pen_name ON tracker.authors(pen_name);
 
 -- ============================================================
 -- Updated_at trigger function
