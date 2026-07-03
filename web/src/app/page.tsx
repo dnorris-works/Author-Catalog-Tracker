@@ -60,6 +60,12 @@ export default function Home() {
           icon="📦"
           href="/distributions"
         />
+        <FeatureCard
+          title="Outreach"
+          description="Log contacts with organizations — track who you sent books to and how it went."
+          icon="📨"
+          href="/outreach"
+        />
       </section>
     </div>
   );
