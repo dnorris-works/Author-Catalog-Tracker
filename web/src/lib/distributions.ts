@@ -24,19 +24,16 @@ export async function getDistributionsByAuthor(authorId: string): Promise<Distri
 
     const pool = getPool();
     const result = await pool.query(
-        `SELECT bd.id, bd.book_id, b.title AS book_title,
-                bd.distributor_id, d.name AS distributor_name,
-                bd.format, bd.notes
-         FROM tracker.book_distributors bd
-         JOIN tracker.books b ON b.id = bd.book_id
-         JOIN tracker.distributors d ON d.id = bd.distributor_id
-         WHERE b.author_id = $1
-         ORDER BY b.title ASC, d.name ASC`,
+        `SELECT distribution_id, book_id, book_title,
+                distributor_id, distributor_name,
+                format, notes
+         FROM tracker.v_distributions
+         WHERE author_id = $1`,
         [authorId]
     );
 
     return result.rows.map((row) => ({
-        id: row.id,
+        id: row.distribution_id,
         bookId: row.book_id,
         bookTitle: row.book_title,
         distributorId: row.distributor_id,

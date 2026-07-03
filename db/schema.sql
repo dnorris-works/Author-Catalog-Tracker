@@ -141,3 +141,24 @@ CREATE TRIGGER trg_organizations_updated
 CREATE TRIGGER trg_books_updated
     BEFORE UPDATE ON tracker.books
     FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();
+
+-- ============================================================
+-- View: Distributions by author (books + distributors combined)
+-- ============================================================
+CREATE VIEW tracker.v_distributions AS
+SELECT
+    bd.id AS distribution_id,
+    a.id AS author_id,
+    a.pen_name AS author_name,
+    b.id AS book_id,
+    b.title AS book_title,
+    d.id AS distributor_id,
+    d.name AS distributor_name,
+    bd.format,
+    bd.notes,
+    bd.created_at
+FROM tracker.book_distributors bd
+JOIN tracker.books b ON b.id = bd.book_id
+JOIN tracker.authors a ON a.id = b.author_id
+JOIN tracker.distributors d ON d.id = bd.distributor_id
+ORDER BY a.pen_name, b.title, d.name;
