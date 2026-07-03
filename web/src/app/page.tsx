@@ -54,6 +54,12 @@ export default function Home() {
           icon="🤝"
           href="/organizations"
         />
+        <FeatureCard
+          title="Distributions"
+          description="See which distributors carry each book, filtered by author."
+          icon="📦"
+          href="/distributions"
+        />
       </section>
     </div>
   );

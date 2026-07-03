@@ -1,0 +1,81 @@
+import { getPool } from './db';
+
+export type Distribution = {
+    id: string;
+    bookId: string;
+    distributorId: string;
+    format: string | null;
+    notes: string | null;
+    createdAt: Date;
+};
+
+export type DistributionView = {
+    id: string;
+    bookId: string;
+    bookTitle: string;
+    distributorId: string;
+    distributorName: string;
+    format: string | null;
+    notes: string | null;
+};
+
+export async function getDistributionsByAuthor(authorId: string): Promise<DistributionView[]> {
+    if (!process.env.DATABASE_URL) return [];
+
+    const pool = getPool();
+    const result = await pool.query(
+        `SELECT bd.id, bd.book_id, b.title AS book_title,
+                bd.distributor_id, d.name AS distributor_name,
+                bd.format, bd.notes
+         FROM tracker.book_distributors bd
+         JOIN tracker.books b ON b.id = bd.book_id
+         JOIN tracker.distributors d ON d.id = bd.distributor_id
+         WHERE b.author_id = $1
+         ORDER BY b.title ASC, d.name ASC`,
+        [authorId]
+    );
+
+    return result.rows.map((row) => ({
+        id: row.id,
+        bookId: row.book_id,
+        bookTitle: row.book_title,
+        distributorId: row.distributor_id,
+        distributorName: row.distributor_name,
+        format: row.format,
+        notes: row.notes,
+    }));
+}
+
+export async function createDistribution(input: {
+    bookId: string;
+    distributorId: string;
+    format?: string;
+    notes?: string;
+}): Promise<Distribution> {
+    const pool = getPool();
+    const result = await pool.query(
+        `INSERT INTO tracker.book_distributors (book_id, distributor_id, format, notes)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, book_id, distributor_id, format, notes, created_at`,
+        [input.bookId, input.distributorId, input.format || null, input.notes || null]
+    );
+
+    const row = result.rows[0];
+    return {
+        id: row.id,
+        bookId: row.book_id,
+        distributorId: row.distributor_id,
+        format: row.format,
+        notes: row.notes,
+        createdAt: row.created_at,
+    };
+}
+
+export async function deleteDistribution(id: string): Promise<boolean> {
+    const pool = getPool();
+    const result = await pool.query(
+        `DELETE FROM tracker.book_distributors WHERE id = $1`,
+        [id]
+    );
+    return (result.rowCount ?? 0) > 0;
+}

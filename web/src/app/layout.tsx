@@ -80,6 +80,14 @@ export default function RootLayout({
                   Organizations
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/distributions"
+                  className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
+                >
+                  Distributions
+                </Link>
+              </li>
             </ul>
           </nav>
         </header>
