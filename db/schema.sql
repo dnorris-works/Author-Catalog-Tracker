@@ -34,9 +34,9 @@ CREATE TABLE tracker.authors (
 );
 
 -- ============================================================
--- Publishers
+-- Distributors
 -- ============================================================
-CREATE TABLE tracker.publishers (
+CREATE TABLE tracker.distributors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     website VARCHAR(255),
@@ -66,7 +66,7 @@ CREATE TABLE tracker.books (
     isbn_10 CHAR(10),
     isbn_13 CHAR(13),
     author_id UUID NOT NULL REFERENCES tracker.authors(id) ON DELETE CASCADE,
-    publisher_id UUID REFERENCES tracker.publishers(id) ON DELETE SET NULL,
+    distributor_id UUID REFERENCES tracker.distributors(id) ON DELETE SET NULL,
     publication_date DATE,
     edition VARCHAR(50),
     page_count INTEGER,
@@ -104,7 +104,7 @@ CREATE TABLE tracker.book_genres (
 -- Indexes
 -- ============================================================
 CREATE INDEX idx_books_author ON tracker.books(author_id);
-CREATE INDEX idx_books_publisher ON tracker.books(publisher_id);
+CREATE INDEX idx_books_distributor ON tracker.books(distributor_id);
 CREATE INDEX idx_books_title ON tracker.books(title);
 CREATE INDEX idx_ebooks_book ON tracker.ebooks(book_id);
 CREATE INDEX idx_authors_pen_name ON tracker.authors(pen_name);
@@ -125,8 +125,8 @@ CREATE TRIGGER trg_authors_updated
     BEFORE UPDATE ON tracker.authors
     FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();
 
-CREATE TRIGGER trg_publishers_updated
-    BEFORE UPDATE ON tracker.publishers
+CREATE TRIGGER trg_distributors_updated
+    BEFORE UPDATE ON tracker.distributors
     FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();
 
 CREATE TRIGGER trg_books_updated

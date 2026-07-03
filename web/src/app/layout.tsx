@@ -66,10 +66,10 @@ export default function RootLayout({
               </li>
               <li>
                 <Link
-                  href="/publishers"
+                  href="/distributors"
                   className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors"
                 >
-                  Publishers
+                  Distributors
                 </Link>
               </li>
             </ul>

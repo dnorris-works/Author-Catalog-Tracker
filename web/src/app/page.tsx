@@ -10,7 +10,7 @@ export default function Home() {
         </h1>
         <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
           Your central hub for managing authors, books, and eBooks. Track
-          publications, publishers, and catalog your entire library in one place.
+          publications, distributors, and catalog your entire library in one place.
         </p>
         <div className="mt-8 flex justify-center gap-4">
           <Link
@@ -42,8 +42,8 @@ export default function Home() {
           icon="📚"
         />
         <FeatureCard
-          title="Publishers"
-          description="Keep a directory of publishers and link them to your catalog."
+          title="Distributors"
+          description="Keep a directory of distributors and link them to your catalog."
           icon="🏢"
         />
       </section>

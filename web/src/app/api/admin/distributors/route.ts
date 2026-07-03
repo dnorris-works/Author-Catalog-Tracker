@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllPublishers, createPublisher, updatePublisher, deletePublisher } from '@/lib/publishers';
+import { getAllDistributors, createDistributor, updateDistributor, deleteDistributor } from '@/lib/distributors';
 
 export async function GET() {
-    const publishers = await getAllPublishers();
-    return NextResponse.json(publishers);
+    const distributors = await getAllDistributors();
+    return NextResponse.json(distributors);
 }
 
 export async function POST(req: NextRequest) {
@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const publisher = await createPublisher({ name, website, email, phone, address });
-        return NextResponse.json(publisher);
+        const distributor = await createDistributor({ name, website, email, phone, address });
+        return NextResponse.json(distributor);
     } catch (err: unknown) {
-        console.error('Create publisher error:', err);
+        console.error('Create distributor error:', err);
         return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
     }
 }
@@ -30,13 +30,13 @@ export async function PUT(req: NextRequest) {
     }
 
     try {
-        const publisher = await updatePublisher(id, { name, website, email, phone, address });
-        if (!publisher) {
-            return NextResponse.json({ error: 'Publisher not found.' }, { status: 404 });
+        const distributor = await updateDistributor(id, { name, website, email, phone, address });
+        if (!distributor) {
+            return NextResponse.json({ error: 'Distributor not found.' }, { status: 404 });
         }
-        return NextResponse.json(publisher);
+        return NextResponse.json(distributor);
     } catch (err: unknown) {
-        console.error('Update publisher error:', err);
+        console.error('Update distributor error:', err);
         return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
     }
 }
@@ -48,9 +48,9 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'id is required.' }, { status: 400 });
     }
 
-    const deleted = await deletePublisher(id);
+    const deleted = await deleteDistributor(id);
     if (!deleted) {
-        return NextResponse.json({ error: 'Publisher not found.' }, { status: 404 });
+        return NextResponse.json({ error: 'Distributor not found.' }, { status: 404 });
     }
 
     return NextResponse.json({ ok: true });

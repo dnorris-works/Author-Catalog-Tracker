@@ -1,6 +1,6 @@
 import { getPool } from './db';
 
-export type Publisher = {
+export type Distributor = {
     id: string;
     name: string;
     website: string | null;
@@ -11,7 +11,7 @@ export type Publisher = {
     updatedAt: Date;
 };
 
-type PublisherRow = {
+type DistributorRow = {
     id: string;
     name: string;
     website: string | null;
@@ -22,7 +22,7 @@ type PublisherRow = {
     updated_at: Date;
 };
 
-function toPublisher(row: PublisherRow): Publisher {
+function toDistributor(row: DistributorRow): Distributor {
     return {
         id: row.id,
         name: row.name,
@@ -35,44 +35,44 @@ function toPublisher(row: PublisherRow): Publisher {
     };
 }
 
-export async function getAllPublishers(): Promise<Publisher[]> {
+export async function getAllDistributors(): Promise<Distributor[]> {
     if (!process.env.DATABASE_URL) return [];
 
     const pool = getPool();
     const result = await pool.query(
         `SELECT id, name, website, email, phone, address, created_at, updated_at
-         FROM tracker.publishers
+         FROM tracker.distributors
          ORDER BY name ASC`
     );
 
-    return result.rows.map(toPublisher);
+    return result.rows.map(toDistributor);
 }
 
-export async function getPublisherById(id: string): Promise<Publisher | null> {
+export async function getDistributorById(id: string): Promise<Distributor | null> {
     if (!process.env.DATABASE_URL) return null;
 
     const pool = getPool();
     const result = await pool.query(
         `SELECT id, name, website, email, phone, address, created_at, updated_at
-         FROM tracker.publishers
+         FROM tracker.distributors
          WHERE id = $1`,
         [id]
     );
 
     if (result.rows.length === 0) return null;
-    return toPublisher(result.rows[0]);
+    return toDistributor(result.rows[0]);
 }
 
-export async function createPublisher(input: {
+export async function createDistributor(input: {
     name: string;
     website?: string;
     email?: string;
     phone?: string;
     address?: string;
-}): Promise<Publisher> {
+}): Promise<Distributor> {
     const pool = getPool();
     const result = await pool.query(
-        `INSERT INTO tracker.publishers (name, website, email, phone, address)
+        `INSERT INTO tracker.distributors (name, website, email, phone, address)
          VALUES ($1, $2, $3, $4, $5)
          RETURNING id, name, website, email, phone, address, created_at, updated_at`,
         [
@@ -84,10 +84,10 @@ export async function createPublisher(input: {
         ]
     );
 
-    return toPublisher(result.rows[0]);
+    return toDistributor(result.rows[0]);
 }
 
-export async function updatePublisher(
+export async function updateDistributor(
     id: string,
     input: {
         name: string;
@@ -96,10 +96,10 @@ export async function updatePublisher(
         phone?: string;
         address?: string;
     }
-): Promise<Publisher | null> {
+): Promise<Distributor | null> {
     const pool = getPool();
     const result = await pool.query(
-        `UPDATE tracker.publishers
+        `UPDATE tracker.distributors
          SET name = $2, website = $3, email = $4, phone = $5, address = $6
          WHERE id = $1
          RETURNING id, name, website, email, phone, address, created_at, updated_at`,
@@ -114,13 +114,13 @@ export async function updatePublisher(
     );
 
     if (result.rows.length === 0) return null;
-    return toPublisher(result.rows[0]);
+    return toDistributor(result.rows[0]);
 }
 
-export async function deletePublisher(id: string): Promise<boolean> {
+export async function deleteDistributor(id: string): Promise<boolean> {
     const pool = getPool();
     const result = await pool.query(
-        `DELETE FROM tracker.publishers WHERE id = $1`,
+        `DELETE FROM tracker.distributors WHERE id = $1`,
         [id]
     );
     return (result.rowCount ?? 0) > 0;

@@ -8,14 +8,14 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-    const { title, subtitle, isbn10, isbn13, authorId, publisherId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
+    const { title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
 
     if (!title || !authorId) {
         return NextResponse.json({ error: 'title and authorId are required.' }, { status: 400 });
     }
 
     try {
-        const book = await createBook({ title, subtitle, isbn10, isbn13, authorId, publisherId, publicationDate, edition, pageCount, language, summary, coverImageUrl });
+        const book = await createBook({ title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl });
         return NextResponse.json(book);
     } catch (err: unknown) {
         console.error('Create book error:', err);
@@ -25,14 +25,14 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
     const body = await req.json();
-    const { id, title, subtitle, isbn10, isbn13, authorId, publisherId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
+    const { id, title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
 
     if (!id || !title || !authorId) {
         return NextResponse.json({ error: 'id, title, and authorId are required.' }, { status: 400 });
     }
 
     try {
-        const book = await updateBook(id, { title, subtitle, isbn10, isbn13, authorId, publisherId, publicationDate, edition, pageCount, language, summary, coverImageUrl });
+        const book = await updateBook(id, { title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl });
         if (!book) {
             return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
         }
