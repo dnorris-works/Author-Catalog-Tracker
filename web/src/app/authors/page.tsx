@@ -35,7 +35,7 @@ export default function AuthorsPage() {
     }, []);
 
     async function loadAuthors() {
-        const res = await fetch('/api/admin/authors');
+        const res = await fetch('/api/authors');
         if (res.ok) {
             setAuthors(await res.json());
         }
@@ -68,7 +68,7 @@ export default function AuthorsPage() {
         const { id: editId, ...fields } = editing;
         const body = editId ? { id: editId, ...fields } : fields;
 
-        const res = await fetch('/api/admin/authors', {
+        const res = await fetch('/api/authors', {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -88,7 +88,7 @@ export default function AuthorsPage() {
     async function handleDelete(id: string) {
         if (!confirm('Delete this author? This cannot be undone.')) return;
 
-        const res = await fetch('/api/admin/authors', {
+        const res = await fetch('/api/authors', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id }),

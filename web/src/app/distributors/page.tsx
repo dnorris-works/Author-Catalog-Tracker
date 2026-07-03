@@ -41,7 +41,7 @@ export default function DistributorsPage() {
     }, []);
 
     async function loadDistributors() {
-        const res = await fetch('/api/admin/distributors');
+        const res = await fetch('/api/distributors');
         if (res.ok) {
             setDistributors(await res.json());
         }
@@ -76,7 +76,7 @@ export default function DistributorsPage() {
         const { id: editId, ...fields } = editing;
         const body = editId ? { id: editId, ...fields } : fields;
 
-        const res = await fetch('/api/admin/distributors', {
+        const res = await fetch('/api/distributors', {
             method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
@@ -96,7 +96,7 @@ export default function DistributorsPage() {
     async function handleDelete(id: string) {
         if (!confirm('Delete this distributor? This cannot be undone.')) return;
 
-        const res = await fetch('/api/admin/distributors', {
+        const res = await fetch('/api/distributors', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id }),
