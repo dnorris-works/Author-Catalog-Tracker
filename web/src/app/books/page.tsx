@@ -55,7 +55,6 @@ export default function BooksPage() {
     const [success, setSuccess] = useState('');
 
     // ISBN add form
-    const [isbnBookId, setIsbnBookId] = useState<string | null>(null);
     const [newIsbn, setNewIsbn] = useState('');
     const [newIsbnFormat, setNewIsbnFormat] = useState('');
 
@@ -129,21 +128,6 @@ export default function BooksPage() {
             body: JSON.stringify({ id }),
         });
         if (res.ok) await loadBooks();
-    }
-
-    async function handleAddIsbn() {
-        if (!isbnBookId || !newIsbn) return;
-        const res = await fetch('/api/books', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'addIsbn', bookId: isbnBookId, isbn: newIsbn, format: newIsbnFormat || null }),
-        });
-        if (res.ok) {
-            setNewIsbn('');
-            setNewIsbnFormat('');
-            setIsbnBookId(null);
-            await loadBooks();
-        }
     }
 
     async function handleRemoveIsbn(isbnId: string) {
@@ -263,6 +247,81 @@ export default function BooksPage() {
                             />
                         </div>
                     </div>
+
+                    {/* ISBN section inside form (only for existing books) */}
+                    {editing.id && (
+                        <div className="mt-6 border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                            <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">ISBNs</h3>
+                            {(() => {
+                                const bookIsbns = books.find((b) => b.id === editing.id)?.isbns ?? [];
+                                return (
+                                    <>
+                                        {bookIsbns.length > 0 && (
+                                            <div className="space-y-1 mb-3">
+                                                {bookIsbns.map((isbn) => (
+                                                    <div key={isbn.id} className="flex items-center gap-2 text-sm">
+                                                        <code className="text-zinc-700 dark:text-zinc-300">{isbn.isbn}</code>
+                                                        {isbn.format && (
+                                                            <span className="text-xs px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                                                                {isbn.format}
+                                                            </span>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleRemoveIsbn(isbn.id)}
+                                                            className="text-xs text-red-500 hover:text-red-700"
+                                                        >
+                                                            remove
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="flex gap-2 items-end">
+                                            <input
+                                                type="text"
+                                                value={newIsbn}
+                                                onChange={(e) => setNewIsbn(e.target.value)}
+                                                placeholder="ISBN"
+                                                className="rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                                            />
+                                            <select
+                                                value={newIsbnFormat}
+                                                onChange={(e) => setNewIsbnFormat(e.target.value)}
+                                                className="rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                                            >
+                                                <option value="">Format...</option>
+                                                <option value="Print">Print</option>
+                                                <option value="eBook">eBook</option>
+                                                <option value="Hardcover">Hardcover</option>
+                                                <option value="Paperback">Paperback</option>
+                                                <option value="Audio">Audio</option>
+                                            </select>
+                                            <button
+                                                type="button"
+                                                onClick={async () => {
+                                                    if (!editing.id || !newIsbn) return;
+                                                    const res = await fetch('/api/books', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ action: 'addIsbn', bookId: editing.id, isbn: newIsbn, format: newIsbnFormat || null }),
+                                                    });
+                                                    if (res.ok) {
+                                                        setNewIsbn('');
+                                                        setNewIsbnFormat('');
+                                                        await loadBooks();
+                                                    }
+                                                }}
+                                                className="rounded bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 transition-colors"
+                                            >
+                                                Add ISBN
+                                            </button>
+                                        </div>
+                                    </>
+                                );
+                            })()}
+                        </div>
+                    )}
+
                     <div className="mt-4 flex gap-3">
                         <button
                             onClick={handleSave}
@@ -321,18 +380,10 @@ export default function BooksPage() {
                                 </div>
 
                                 {/* ISBNs */}
-                                <div className="mt-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
-                                    <div className="flex items-center gap-2 mb-2">
+                                {book.isbns.length > 0 && (
+                                    <div className="mt-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
                                         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase">ISBNs</span>
-                                        <button
-                                            onClick={() => setIsbnBookId(isbnBookId === book.id ? null : book.id)}
-                                            className="text-xs text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                                        >
-                                            {isbnBookId === book.id ? 'Cancel' : '+ Add'}
-                                        </button>
-                                    </div>
-                                    {book.isbns.length > 0 ? (
-                                        <div className="space-y-1">
+                                        <div className="mt-1 space-y-1">
                                             {book.isbns.map((isbn) => (
                                                 <div key={isbn.id} className="flex items-center gap-2 text-sm">
                                                     <code className="text-zinc-700 dark:text-zinc-300">{isbn.isbn}</code>
@@ -341,48 +392,11 @@ export default function BooksPage() {
                                                             {isbn.format}
                                                         </span>
                                                     )}
-                                                    <button
-                                                        onClick={() => handleRemoveIsbn(isbn.id)}
-                                                        className="text-xs text-red-500 hover:text-red-700"
-                                                    >
-                                                        remove
-                                                    </button>
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : (
-                                        <p className="text-xs text-zinc-400">None yet</p>
-                                    )}
-                                    {isbnBookId === book.id && (
-                                        <div className="mt-2 flex gap-2 items-end">
-                                            <input
-                                                type="text"
-                                                value={newIsbn}
-                                                onChange={(e) => setNewIsbn(e.target.value)}
-                                                placeholder="ISBN"
-                                                className="rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                                            />
-                                            <select
-                                                value={newIsbnFormat}
-                                                onChange={(e) => setNewIsbnFormat(e.target.value)}
-                                                className="rounded border border-zinc-300 px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                                            >
-                                                <option value="">Format...</option>
-                                                <option value="Print">Print</option>
-                                                <option value="eBook">eBook</option>
-                                                <option value="Hardcover">Hardcover</option>
-                                                <option value="Paperback">Paperback</option>
-                                                <option value="Audio">Audio</option>
-                                            </select>
-                                            <button
-                                                onClick={handleAddIsbn}
-                                                className="rounded bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 transition-colors"
-                                            >
-                                                Add
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
