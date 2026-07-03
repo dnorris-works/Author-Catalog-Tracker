@@ -110,8 +110,14 @@ export default function BooksPage() {
         });
 
         if (res.ok) {
-            setSuccess(editing.id ? 'Book updated.' : 'Book created.');
-            setEditing(null);
+            const savedBook = await res.json();
+            if (editing.id) {
+                setSuccess('Book updated.');
+                setEditing(null);
+            } else {
+                setSuccess('Book created. You can now add ISBNs below.');
+                setEditing({ ...editing, id: savedBook.id });
+            }
             await loadBooks();
         } else {
             const data = await res.json();
