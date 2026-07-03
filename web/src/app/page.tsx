@@ -46,6 +46,12 @@ export default function Home() {
           description="Keep a directory of distributors and link them to your catalog."
           icon="🏢"
         />
+        <FeatureCard
+          title="Organizations"
+          description="Track organizations for book promotion outreach — schools, clubs, and more."
+          icon="🤝"
+          href="/organizations"
+        />
       </section>
     </div>
   );
