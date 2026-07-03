@@ -40,11 +40,13 @@ export default function Home() {
           title="Books & eBooks"
           description="Track physical and digital publications with ISBNs, formats, and metadata."
           icon="📚"
+          href="/books"
         />
         <FeatureCard
           title="Distributors"
           description="Keep a directory of distributors and link them to your catalog."
           icon="🏢"
+          href="/distributors"
         />
         <FeatureCard
           title="Organizations"

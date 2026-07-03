@@ -65,28 +65,14 @@ CREATE TABLE tracker.distributors (
 );
 
 -- ============================================================
--- Genres
--- ============================================================
-CREATE TABLE tracker.genres (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name VARCHAR(100) NOT NULL UNIQUE,
-    description TEXT
-);
-
--- ============================================================
--- Books
+-- Books (print and ebook in one table)
 -- ============================================================
 CREATE TABLE tracker.books (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(500) NOT NULL,
     subtitle VARCHAR(500),
-    isbn_10 CHAR(10),
-    isbn_13 CHAR(13),
     author_id UUID NOT NULL REFERENCES tracker.authors(id) ON DELETE CASCADE,
-    distributor_id UUID REFERENCES tracker.distributors(id) ON DELETE SET NULL,
     publication_date DATE,
-    edition VARCHAR(50),
-    page_count INTEGER,
     language VARCHAR(50) DEFAULT 'English',
     summary TEXT,
     cover_image_url VARCHAR(500),
@@ -95,35 +81,37 @@ CREATE TABLE tracker.books (
 );
 
 -- ============================================================
--- eBooks (extends a book with digital-specific metadata)
+-- Book ISBNs (1 book = 1 or more ISBNs)
 -- ============================================================
-CREATE TABLE tracker.ebooks (
+CREATE TABLE tracker.book_isbns (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    book_id UUID NOT NULL UNIQUE REFERENCES tracker.books(id) ON DELETE CASCADE,
-    file_format VARCHAR(20) NOT NULL,  -- e.g. EPUB, PDF, MOBI, AZW3
-    file_size_bytes BIGINT,
-    drm_protected BOOLEAN DEFAULT FALSE,
-    download_url VARCHAR(500),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    book_id UUID NOT NULL REFERENCES tracker.books(id) ON DELETE CASCADE,
+    isbn VARCHAR(17) NOT NULL,
+    format VARCHAR(20),  -- e.g. Print, eBook, Hardcover, Paperback, Audio
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ============================================================
--- Book ↔ Genre (many-to-many)
+-- Book ↔ Distributor (which distributor carries which book, and in what format)
 -- ============================================================
-CREATE TABLE tracker.book_genres (
+CREATE TABLE tracker.book_distributors (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     book_id UUID NOT NULL REFERENCES tracker.books(id) ON DELETE CASCADE,
-    genre_id UUID NOT NULL REFERENCES tracker.genres(id) ON DELETE CASCADE,
-    PRIMARY KEY (book_id, genre_id)
+    distributor_id UUID NOT NULL REFERENCES tracker.distributors(id) ON DELETE CASCADE,
+    format VARCHAR(20),  -- Print, eBook, Both
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ============================================================
 -- Indexes
 -- ============================================================
 CREATE INDEX idx_books_author ON tracker.books(author_id);
-CREATE INDEX idx_books_distributor ON tracker.books(distributor_id);
 CREATE INDEX idx_books_title ON tracker.books(title);
-CREATE INDEX idx_ebooks_book ON tracker.ebooks(book_id);
+CREATE INDEX idx_book_isbns_book ON tracker.book_isbns(book_id);
+CREATE INDEX idx_book_distributors_book ON tracker.book_distributors(book_id);
+CREATE INDEX idx_book_distributors_dist ON tracker.book_distributors(distributor_id);
 CREATE INDEX idx_authors_pen_name ON tracker.authors(pen_name);
 
 -- ============================================================
@@ -152,8 +140,4 @@ CREATE TRIGGER trg_organizations_updated
 
 CREATE TRIGGER trg_books_updated
     BEFORE UPDATE ON tracker.books
-    FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();
-
-CREATE TRIGGER trg_ebooks_updated
-    BEFORE UPDATE ON tracker.ebooks
     FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();

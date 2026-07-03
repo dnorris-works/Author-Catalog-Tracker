@@ -1,34 +1,33 @@
 import { getPool } from './db';
 
+export type BookIsbn = {
+    id: string;
+    bookId: string;
+    isbn: string;
+    format: string | null;
+    notes: string | null;
+};
+
 export type Book = {
     id: string;
     title: string;
     subtitle: string | null;
-    isbn10: string | null;
-    isbn13: string | null;
     authorId: string;
-    distributorId: string | null;
     publicationDate: string | null;
-    edition: string | null;
-    pageCount: number | null;
     language: string;
     summary: string | null;
     coverImageUrl: string | null;
     createdAt: Date;
     updatedAt: Date;
+    isbns?: BookIsbn[];
 };
 
 type BookRow = {
     id: string;
     title: string;
     subtitle: string | null;
-    isbn_10: string | null;
-    isbn_13: string | null;
     author_id: string;
-    distributor_id: string | null;
     publication_date: string | null;
-    edition: string | null;
-    page_count: number | null;
     language: string;
     summary: string | null;
     cover_image_url: string | null;
@@ -41,13 +40,8 @@ function toBook(row: BookRow): Book {
         id: row.id,
         title: row.title,
         subtitle: row.subtitle,
-        isbn10: row.isbn_10,
-        isbn13: row.isbn_13,
         authorId: row.author_id,
-        distributorId: row.distributor_id,
         publicationDate: row.publication_date,
-        edition: row.edition,
-        pageCount: row.page_count,
         language: row.language,
         summary: row.summary,
         coverImageUrl: row.cover_image_url,
@@ -60,91 +54,77 @@ export async function getAllBooks(): Promise<Book[]> {
     if (!process.env.DATABASE_URL) return [];
 
     const pool = getPool();
-    const result = await pool.query(
-        `SELECT id, title, subtitle, isbn_10, isbn_13, author_id, distributor_id,
-                publication_date, edition, page_count, language, summary, cover_image_url,
-                created_at, updated_at
-         FROM tracker.books
-         ORDER BY title ASC`
-    );
+    const [booksResult, isbnsResult] = await Promise.all([
+        pool.query(
+            `SELECT id, title, subtitle, author_id, publication_date, language, summary, cover_image_url, created_at, updated_at
+             FROM tracker.books
+             ORDER BY title ASC`
+        ),
+        pool.query(
+            `SELECT id, book_id, isbn, format, notes FROM tracker.book_isbns ORDER BY created_at ASC`
+        ),
+    ]);
 
-    return result.rows.map(toBook);
-}
+    const isbnsByBook = new Map<string, BookIsbn[]>();
+    for (const row of isbnsResult.rows) {
+        const isbn: BookIsbn = { id: row.id, bookId: row.book_id, isbn: row.isbn, format: row.format, notes: row.notes };
+        if (!isbnsByBook.has(row.book_id)) isbnsByBook.set(row.book_id, []);
+        isbnsByBook.get(row.book_id)!.push(isbn);
+    }
 
-export async function getBooksByAuthor(authorId: string): Promise<Book[]> {
-    if (!process.env.DATABASE_URL) return [];
-
-    const pool = getPool();
-    const result = await pool.query(
-        `SELECT id, title, subtitle, isbn_10, isbn_13, author_id, distributor_id,
-                publication_date, edition, page_count, language, summary, cover_image_url,
-                created_at, updated_at
-         FROM tracker.books
-         WHERE author_id = $1
-         ORDER BY publication_date DESC NULLS LAST, title ASC`,
-        [authorId]
-    );
-
-    return result.rows.map(toBook);
+    return booksResult.rows.map((row) => ({
+        ...toBook(row),
+        isbns: isbnsByBook.get(row.id) ?? [],
+    }));
 }
 
 export async function getBookById(id: string): Promise<Book | null> {
     if (!process.env.DATABASE_URL) return null;
 
     const pool = getPool();
-    const result = await pool.query(
-        `SELECT id, title, subtitle, isbn_10, isbn_13, author_id, distributor_id,
-                publication_date, edition, page_count, language, summary, cover_image_url,
-                created_at, updated_at
-         FROM tracker.books
-         WHERE id = $1`,
-        [id]
-    );
+    const [bookResult, isbnsResult] = await Promise.all([
+        pool.query(
+            `SELECT id, title, subtitle, author_id, publication_date, language, summary, cover_image_url, created_at, updated_at
+             FROM tracker.books WHERE id = $1`,
+            [id]
+        ),
+        pool.query(
+            `SELECT id, book_id, isbn, format, notes FROM tracker.book_isbns WHERE book_id = $1 ORDER BY created_at ASC`,
+            [id]
+        ),
+    ]);
 
-    if (result.rows.length === 0) return null;
-    return toBook(result.rows[0]);
+    if (bookResult.rows.length === 0) return null;
+    const isbns: BookIsbn[] = isbnsResult.rows.map((r) => ({ id: r.id, bookId: r.book_id, isbn: r.isbn, format: r.format, notes: r.notes }));
+    return { ...toBook(bookResult.rows[0]), isbns };
 }
 
 export async function createBook(input: {
     title: string;
     subtitle?: string;
-    isbn10?: string;
-    isbn13?: string;
     authorId: string;
-    distributorId?: string;
     publicationDate?: string;
-    edition?: string;
-    pageCount?: number;
     language?: string;
     summary?: string;
     coverImageUrl?: string;
 }): Promise<Book> {
     const pool = getPool();
     const result = await pool.query(
-        `INSERT INTO tracker.books
-            (title, subtitle, isbn_10, isbn_13, author_id, distributor_id,
-             publication_date, edition, page_count, language, summary, cover_image_url)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-         RETURNING id, title, subtitle, isbn_10, isbn_13, author_id, distributor_id,
-                   publication_date, edition, page_count, language, summary, cover_image_url,
-                   created_at, updated_at`,
+        `INSERT INTO tracker.books (title, subtitle, author_id, publication_date, language, summary, cover_image_url)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING id, title, subtitle, author_id, publication_date, language, summary, cover_image_url, created_at, updated_at`,
         [
             input.title,
             input.subtitle || null,
-            input.isbn10 || null,
-            input.isbn13 || null,
             input.authorId,
-            input.distributorId || null,
             input.publicationDate || null,
-            input.edition || null,
-            input.pageCount || null,
             input.language || 'English',
             input.summary || null,
             input.coverImageUrl || null,
         ]
     );
 
-    return toBook(result.rows[0]);
+    return { ...toBook(result.rows[0]), isbns: [] };
 }
 
 export async function updateBook(
@@ -152,13 +132,8 @@ export async function updateBook(
     input: {
         title: string;
         subtitle?: string;
-        isbn10?: string;
-        isbn13?: string;
         authorId: string;
-        distributorId?: string;
         publicationDate?: string;
-        edition?: string;
-        pageCount?: number;
         language?: string;
         summary?: string;
         coverImageUrl?: string;
@@ -167,24 +142,15 @@ export async function updateBook(
     const pool = getPool();
     const result = await pool.query(
         `UPDATE tracker.books
-         SET title = $2, subtitle = $3, isbn_10 = $4, isbn_13 = $5, author_id = $6,
-             distributor_id = $7, publication_date = $8, edition = $9, page_count = $10,
-             language = $11, summary = $12, cover_image_url = $13
+         SET title = $2, subtitle = $3, author_id = $4, publication_date = $5, language = $6, summary = $7, cover_image_url = $8
          WHERE id = $1
-         RETURNING id, title, subtitle, isbn_10, isbn_13, author_id, distributor_id,
-                   publication_date, edition, page_count, language, summary, cover_image_url,
-                   created_at, updated_at`,
+         RETURNING id, title, subtitle, author_id, publication_date, language, summary, cover_image_url, created_at, updated_at`,
         [
             id,
             input.title,
             input.subtitle || null,
-            input.isbn10 || null,
-            input.isbn13 || null,
             input.authorId,
-            input.distributorId || null,
             input.publicationDate || null,
-            input.edition || null,
-            input.pageCount || null,
             input.language || 'English',
             input.summary || null,
             input.coverImageUrl || null,
@@ -197,9 +163,25 @@ export async function updateBook(
 
 export async function deleteBook(id: string): Promise<boolean> {
     const pool = getPool();
+    const result = await pool.query(`DELETE FROM tracker.books WHERE id = $1`, [id]);
+    return (result.rowCount ?? 0) > 0;
+}
+
+// ISBN management
+export async function addIsbn(bookId: string, isbn: string, format?: string, notes?: string): Promise<BookIsbn> {
+    const pool = getPool();
     const result = await pool.query(
-        `DELETE FROM tracker.books WHERE id = $1`,
-        [id]
+        `INSERT INTO tracker.book_isbns (book_id, isbn, format, notes)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, book_id, isbn, format, notes`,
+        [bookId, isbn, format || null, notes || null]
     );
+    const row = result.rows[0];
+    return { id: row.id, bookId: row.book_id, isbn: row.isbn, format: row.format, notes: row.notes };
+}
+
+export async function removeIsbn(isbnId: string): Promise<boolean> {
+    const pool = getPool();
+    const result = await pool.query(`DELETE FROM tracker.book_isbns WHERE id = $1`, [isbnId]);
     return (result.rowCount ?? 0) > 0;
 }

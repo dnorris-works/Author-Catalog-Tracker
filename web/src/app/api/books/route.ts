@@ -1,21 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllBooks, createBook, updateBook, deleteBook } from '@/lib/books';
+import { getAllBooks, createBook, updateBook, deleteBook, addIsbn, removeIsbn } from '@/lib/books';
 
 export async function GET() {
-    const books = await getAllBooks();
-    return NextResponse.json(books);
+    try {
+        const books = await getAllBooks();
+        return NextResponse.json(books);
+    } catch (err: unknown) {
+        console.error('Get books error:', err);
+        const message = err instanceof Error ? err.message : 'Something went wrong.';
+        return NextResponse.json({ error: message }, { status: 500 });
+    }
 }
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-    const { title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
+
+    // ISBN sub-actions
+    if (body.action === 'addIsbn') {
+        const { bookId, isbn, format, notes } = body;
+        if (!bookId || !isbn) {
+            return NextResponse.json({ error: 'bookId and isbn are required.' }, { status: 400 });
+        }
+        try {
+            const result = await addIsbn(bookId, isbn, format, notes);
+            return NextResponse.json(result);
+        } catch (err: unknown) {
+            console.error('Add ISBN error:', err);
+            return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        }
+    }
+
+    if (body.action === 'removeIsbn') {
+        const { isbnId } = body;
+        if (!isbnId) {
+            return NextResponse.json({ error: 'isbnId is required.' }, { status: 400 });
+        }
+        const deleted = await removeIsbn(isbnId);
+        if (!deleted) {
+            return NextResponse.json({ error: 'ISBN not found.' }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+    }
+
+    // Create book
+    const { title, subtitle, authorId, publicationDate, language, summary, coverImageUrl } = body;
 
     if (!title || !authorId) {
         return NextResponse.json({ error: 'title and authorId are required.' }, { status: 400 });
     }
 
     try {
-        const book = await createBook({ title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl });
+        const book = await createBook({ title, subtitle, authorId, publicationDate, language, summary, coverImageUrl });
         return NextResponse.json(book);
     } catch (err: unknown) {
         console.error('Create book error:', err);
@@ -25,14 +60,14 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
     const body = await req.json();
-    const { id, title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl } = body;
+    const { id, title, subtitle, authorId, publicationDate, language, summary, coverImageUrl } = body;
 
     if (!id || !title || !authorId) {
         return NextResponse.json({ error: 'id, title, and authorId are required.' }, { status: 400 });
     }
 
     try {
-        const book = await updateBook(id, { title, subtitle, isbn10, isbn13, authorId, distributorId, publicationDate, edition, pageCount, language, summary, coverImageUrl });
+        const book = await updateBook(id, { title, subtitle, authorId, publicationDate, language, summary, coverImageUrl });
         if (!book) {
             return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
         }
