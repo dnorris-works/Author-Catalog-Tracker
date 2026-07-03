@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllDistributors, createDistributor, updateDistributor, deleteDistributor } from '@/lib/distributors';
+import { errorResponse } from '@/lib/api-error';
 
 export async function GET() {
-    const distributors = await getAllDistributors();
-    return NextResponse.json(distributors);
+    try {
+        const distributors = await getAllDistributors();
+        return NextResponse.json(distributors);
+    } catch (err: unknown) {
+        return errorResponse(err, 'Get distributors error:');
+    }
 }
 
 export async function POST(req: NextRequest) {
@@ -17,8 +22,7 @@ export async function POST(req: NextRequest) {
         const distributor = await createDistributor({ name, contact, website, email, phone, address });
         return NextResponse.json(distributor);
     } catch (err: unknown) {
-        console.error('Create distributor error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Create distributor error:');
     }
 }
 
@@ -36,8 +40,7 @@ export async function PUT(req: NextRequest) {
         }
         return NextResponse.json(distributor);
     } catch (err: unknown) {
-        console.error('Update distributor error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Update distributor error:');
     }
 }
 
@@ -48,10 +51,13 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'id is required.' }, { status: 400 });
     }
 
-    const deleted = await deleteDistributor(id);
-    if (!deleted) {
-        return NextResponse.json({ error: 'Distributor not found.' }, { status: 404 });
+    try {
+        const deleted = await deleteDistributor(id);
+        if (!deleted) {
+            return NextResponse.json({ error: 'Distributor not found.' }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+    } catch (err: unknown) {
+        return errorResponse(err, 'Delete distributor error:');
     }
-
-    return NextResponse.json({ ok: true });
 }

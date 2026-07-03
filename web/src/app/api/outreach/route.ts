@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOutreach, createOutreach, updateOutreach, deleteOutreach } from '@/lib/outreach';
+import { errorResponse } from '@/lib/api-error';
 
 export async function GET() {
     try {
         const outreach = await getAllOutreach();
         return NextResponse.json(outreach);
     } catch (err: unknown) {
-        console.error('Get outreach error:', err);
-        const message = err instanceof Error ? err.message : 'Something went wrong.';
-        return NextResponse.json({ error: message }, { status: 500 });
+        return errorResponse(err, 'Get outreach error:');
     }
 }
 
@@ -23,8 +22,7 @@ export async function POST(req: NextRequest) {
         const id = await createOutreach(body);
         return NextResponse.json({ id });
     } catch (err: unknown) {
-        console.error('Create outreach error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Create outreach error:');
     }
 }
 
@@ -43,8 +41,7 @@ export async function PUT(req: NextRequest) {
         }
         return NextResponse.json({ ok: true });
     } catch (err: unknown) {
-        console.error('Update outreach error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Update outreach error:');
     }
 }
 
@@ -55,10 +52,13 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'id is required.' }, { status: 400 });
     }
 
-    const deleted = await deleteOutreach(id);
-    if (!deleted) {
-        return NextResponse.json({ error: 'Outreach record not found.' }, { status: 404 });
+    try {
+        const deleted = await deleteOutreach(id);
+        if (!deleted) {
+            return NextResponse.json({ error: 'Outreach record not found.' }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+    } catch (err: unknown) {
+        return errorResponse(err, 'Delete outreach error:');
     }
-
-    return NextResponse.json({ ok: true });
 }

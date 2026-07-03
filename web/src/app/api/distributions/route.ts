@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDistributionsByAuthor, createDistribution, deleteDistribution } from '@/lib/distributions';
+import { errorResponse } from '@/lib/api-error';
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -13,9 +14,7 @@ export async function GET(req: NextRequest) {
         const distributions = await getDistributionsByAuthor(authorId);
         return NextResponse.json(distributions);
     } catch (err: unknown) {
-        console.error('Get distributions error:', err);
-        const message = err instanceof Error ? err.message : 'Something went wrong.';
-        return NextResponse.json({ error: message }, { status: 500 });
+        return errorResponse(err, 'Get distributions error:');
     }
 }
 
@@ -30,8 +29,7 @@ export async function POST(req: NextRequest) {
         const distribution = await createDistribution({ bookId, distributorId, format, notes });
         return NextResponse.json(distribution);
     } catch (err: unknown) {
-        console.error('Create distribution error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Create distribution error:');
     }
 }
 
@@ -42,10 +40,13 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'id is required.' }, { status: 400 });
     }
 
-    const deleted = await deleteDistribution(id);
-    if (!deleted) {
-        return NextResponse.json({ error: 'Distribution not found.' }, { status: 404 });
+    try {
+        const deleted = await deleteDistribution(id);
+        if (!deleted) {
+            return NextResponse.json({ error: 'Distribution not found.' }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+    } catch (err: unknown) {
+        return errorResponse(err, 'Delete distribution error:');
     }
-
-    return NextResponse.json({ ok: true });
 }

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllBooks, createBook, updateBook, deleteBook, addIsbn, removeIsbn } from '@/lib/books';
+import { errorResponse } from '@/lib/api-error';
 
 export async function GET() {
     try {
         const books = await getAllBooks();
         return NextResponse.json(books);
     } catch (err: unknown) {
-        console.error('Get books error:', err);
-        const message = err instanceof Error ? err.message : 'Something went wrong.';
-        return NextResponse.json({ error: message }, { status: 500 });
+        return errorResponse(err, 'Get books error:');
     }
 }
 
@@ -25,8 +24,7 @@ export async function POST(req: NextRequest) {
             const result = await addIsbn(bookId, isbn, format, notes);
             return NextResponse.json(result);
         } catch (err: unknown) {
-            console.error('Add ISBN error:', err);
-            return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+            return errorResponse(err, 'Add ISBN error:');
         }
     }
 
@@ -35,11 +33,15 @@ export async function POST(req: NextRequest) {
         if (!isbnId) {
             return NextResponse.json({ error: 'isbnId is required.' }, { status: 400 });
         }
-        const deleted = await removeIsbn(isbnId);
-        if (!deleted) {
-            return NextResponse.json({ error: 'ISBN not found.' }, { status: 404 });
+        try {
+            const deleted = await removeIsbn(isbnId);
+            if (!deleted) {
+                return NextResponse.json({ error: 'ISBN not found.' }, { status: 404 });
+            }
+            return NextResponse.json({ ok: true });
+        } catch (err: unknown) {
+            return errorResponse(err, 'Remove ISBN error:');
         }
-        return NextResponse.json({ ok: true });
     }
 
     // Create book
@@ -53,8 +55,7 @@ export async function POST(req: NextRequest) {
         const book = await createBook({ title, subtitle, authorId, publicationDate, language, summary, coverImageUrl });
         return NextResponse.json(book);
     } catch (err: unknown) {
-        console.error('Create book error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Create book error:');
     }
 }
 
@@ -73,8 +74,7 @@ export async function PUT(req: NextRequest) {
         }
         return NextResponse.json(book);
     } catch (err: unknown) {
-        console.error('Update book error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Update book error:');
     }
 }
 
@@ -85,10 +85,13 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'id is required.' }, { status: 400 });
     }
 
-    const deleted = await deleteBook(id);
-    if (!deleted) {
-        return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+    try {
+        const deleted = await deleteBook(id);
+        if (!deleted) {
+            return NextResponse.json({ error: 'Book not found.' }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+    } catch (err: unknown) {
+        return errorResponse(err, 'Delete book error:');
     }
-
-    return NextResponse.json({ ok: true });
 }

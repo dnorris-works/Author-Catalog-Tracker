@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrganizations, createOrganization, updateOrganization, deleteOrganization } from '@/lib/organizations';
+import { errorResponse } from '@/lib/api-error';
 
 export async function GET() {
-    const orgs = await getAllOrganizations();
-    return NextResponse.json(orgs);
+    try {
+        const orgs = await getAllOrganizations();
+        return NextResponse.json(orgs);
+    } catch (err: unknown) {
+        return errorResponse(err, 'Get organizations error:');
+    }
 }
 
 export async function POST(req: NextRequest) {
@@ -17,8 +22,7 @@ export async function POST(req: NextRequest) {
         const org = await createOrganization({ name, contact, email, phone, website, reach, notes });
         return NextResponse.json(org);
     } catch (err: unknown) {
-        console.error('Create organization error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Create organization error:');
     }
 }
 
@@ -36,8 +40,7 @@ export async function PUT(req: NextRequest) {
         }
         return NextResponse.json(org);
     } catch (err: unknown) {
-        console.error('Update organization error:', err);
-        return NextResponse.json({ error: 'Something went wrong.' }, { status: 500 });
+        return errorResponse(err, 'Update organization error:');
     }
 }
 
@@ -48,10 +51,13 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ error: 'id is required.' }, { status: 400 });
     }
 
-    const deleted = await deleteOrganization(id);
-    if (!deleted) {
-        return NextResponse.json({ error: 'Organization not found.' }, { status: 404 });
+    try {
+        const deleted = await deleteOrganization(id);
+        if (!deleted) {
+            return NextResponse.json({ error: 'Organization not found.' }, { status: 404 });
+        }
+        return NextResponse.json({ ok: true });
+    } catch (err: unknown) {
+        return errorResponse(err, 'Delete organization error:');
     }
-
-    return NextResponse.json({ ok: true });
 }

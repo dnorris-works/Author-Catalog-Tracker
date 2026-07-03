@@ -71,7 +71,7 @@ CREATE TABLE tracker.books (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(500) NOT NULL,
     subtitle VARCHAR(500),
-    author_id UUID NOT NULL REFERENCES tracker.authors(id) ON DELETE CASCADE,
+    author_id UUID NOT NULL REFERENCES tracker.authors(id) ON DELETE RESTRICT,
     publication_date DATE,
     language VARCHAR(50) DEFAULT 'English',
     summary TEXT,
@@ -86,7 +86,7 @@ CREATE TABLE tracker.books (
 CREATE TABLE tracker.book_isbns (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     book_id UUID NOT NULL REFERENCES tracker.books(id) ON DELETE CASCADE,
-    isbn VARCHAR(17) NOT NULL,
+    isbn VARCHAR(17) NOT NULL UNIQUE,
     format VARCHAR(20),  -- e.g. Print, eBook, Hardcover, Paperback, Audio
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

@@ -308,6 +308,7 @@ export default function BooksPage() {
                                             type="button"
                                             onClick={async () => {
                                                 if (!editing.id || !newIsbn) return;
+                                                setError('');
                                                 const res = await fetch('/api/books', {
                                                     method: 'POST',
                                                     headers: { 'Content-Type': 'application/json' },
@@ -317,6 +318,9 @@ export default function BooksPage() {
                                                     setNewIsbn('');
                                                     setNewIsbnFormat('');
                                                     await loadBooks();
+                                                } else {
+                                                    const data = await res.json();
+                                                    setError(data.error ?? 'Something went wrong.');
                                                 }
                                             }}
                                             className="rounded bg-zinc-900 px-3 py-1 text-sm text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300 transition-colors"

@@ -87,6 +87,8 @@ export default function AuthorsPage() {
 
     async function handleDelete(id: string) {
         if (!confirm('Delete this author? This cannot be undone.')) return;
+        setError('');
+        setSuccess('');
 
         const res = await fetch('/api/authors', {
             method: 'DELETE',
@@ -96,6 +98,9 @@ export default function AuthorsPage() {
 
         if (res.ok) {
             await loadAuthors();
+        } else {
+            const data = await res.json();
+            setError(data.error ?? 'Something went wrong.');
         }
     }
 

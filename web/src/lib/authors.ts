@@ -103,6 +103,15 @@ export async function updateAuthor(
     return toAuthor(result.rows[0]);
 }
 
+export async function getAuthorBookCount(id: string): Promise<number> {
+    const pool = getPool();
+    const result = await pool.query(
+        `SELECT COUNT(*)::int AS count FROM tracker.books WHERE author_id = $1`,
+        [id]
+    );
+    return result.rows[0].count;
+}
+
 export async function deleteAuthor(id: string): Promise<boolean> {
     const pool = getPool();
     const result = await pool.query(

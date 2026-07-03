@@ -1,4 +1,5 @@
 import { getPool } from './db';
+import { ApiError } from './api-error';
 
 export type BookIsbn = {
     id: string;
@@ -170,14 +171,21 @@ export async function deleteBook(id: string): Promise<boolean> {
 // ISBN management
 export async function addIsbn(bookId: string, isbn: string, format?: string, notes?: string): Promise<BookIsbn> {
     const pool = getPool();
-    const result = await pool.query(
-        `INSERT INTO tracker.book_isbns (book_id, isbn, format, notes)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, book_id, isbn, format, notes`,
-        [bookId, isbn, format || null, notes || null]
-    );
-    const row = result.rows[0];
-    return { id: row.id, bookId: row.book_id, isbn: row.isbn, format: row.format, notes: row.notes };
+    try {
+        const result = await pool.query(
+            `INSERT INTO tracker.book_isbns (book_id, isbn, format, notes)
+             VALUES ($1, $2, $3, $4)
+             RETURNING id, book_id, isbn, format, notes`,
+            [bookId, isbn, format || null, notes || null]
+        );
+        const row = result.rows[0];
+        return { id: row.id, bookId: row.book_id, isbn: row.isbn, format: row.format, notes: row.notes };
+    } catch (err: unknown) {
+        if (err && typeof err === 'object' && 'code' in err && err.code === '23505') {
+            throw new ApiError(`ISBN "${isbn}" is already assigned to another book.`, 409);
+        }
+        throw err;
+    }
 }
 
 export async function removeIsbn(isbnId: string): Promise<boolean> {
