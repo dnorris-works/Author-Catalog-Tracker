@@ -7,14 +7,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-    const { name, website, email, phone, address } = await req.json();
+    const { name, contact, website, email, phone, address } = await req.json();
 
     if (!name) {
         return NextResponse.json({ error: 'name is required.' }, { status: 400 });
     }
 
     try {
-        const distributor = await createDistributor({ name, website, email, phone, address });
+        const distributor = await createDistributor({ name, contact, website, email, phone, address });
         return NextResponse.json(distributor);
     } catch (err: unknown) {
         console.error('Create distributor error:', err);
@@ -23,14 +23,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-    const { id, name, website, email, phone, address } = await req.json();
+    const { id, name, contact, website, email, phone, address } = await req.json();
 
     if (!id || !name) {
         return NextResponse.json({ error: 'id and name are required.' }, { status: 400 });
     }
 
     try {
-        const distributor = await updateDistributor(id, { name, website, email, phone, address });
+        const distributor = await updateDistributor(id, { name, contact, website, email, phone, address });
         if (!distributor) {
             return NextResponse.json({ error: 'Distributor not found.' }, { status: 404 });
         }

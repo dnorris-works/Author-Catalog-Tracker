@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 type Distributor = {
     id: string;
     name: string;
+    contact: string | null;
     website: string | null;
     email: string | null;
     phone: string | null;
@@ -14,6 +15,7 @@ type Distributor = {
 type DistributorForm = {
     id: string | null;
     name: string;
+    contact: string;
     website: string;
     email: string;
     phone: string;
@@ -23,6 +25,7 @@ type DistributorForm = {
 const emptyForm: DistributorForm = {
     id: null,
     name: '',
+    contact: '',
     website: '',
     email: '',
     phone: '',
@@ -57,6 +60,7 @@ export default function DistributorsPage() {
         setEditing({
             id: d.id,
             name: d.name,
+            contact: d.contact ?? '',
             website: d.website ?? '',
             email: d.email ?? '',
             phone: d.phone ?? '',
@@ -145,6 +149,19 @@ export default function DistributorsPage() {
                                 className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
                             />
                         </div>
+                        <div className="sm:col-span-2">
+                            <label htmlFor="contact" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                                Contact
+                            </label>
+                            <input
+                                id="contact"
+                                type="text"
+                                value={editing.contact}
+                                onChange={(e) => setEditing({ ...editing, contact: e.target.value })}
+                                placeholder="Person(s) to talk to"
+                                className="w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                            />
+                        </div>
                         <div>
                             <label htmlFor="website" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
                                 Website
@@ -225,6 +242,7 @@ export default function DistributorsPage() {
                             <thead>
                                 <tr className="border-b border-zinc-200 dark:border-zinc-800">
                                     <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Name</th>
+                                    <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Contact</th>
                                     <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Website</th>
                                     <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Email</th>
                                     <th className="py-3 px-2 font-medium text-zinc-600 dark:text-zinc-400">Phone</th>
@@ -236,6 +254,9 @@ export default function DistributorsPage() {
                                     <tr key={d.id} className="border-b border-zinc-100 dark:border-zinc-800/50">
                                         <td className="py-3 px-2 text-zinc-900 dark:text-zinc-100">
                                             {d.name}
+                                        </td>
+                                        <td className="py-3 px-2 text-zinc-600 dark:text-zinc-400">
+                                            {d.contact || '—'}
                                         </td>
                                         <td className="py-3 px-2 text-zinc-600 dark:text-zinc-400">
                                             {d.website ? (

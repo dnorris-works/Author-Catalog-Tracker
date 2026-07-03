@@ -39,6 +39,7 @@ CREATE TABLE tracker.authors (
 CREATE TABLE tracker.distributors (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
+    contact TEXT,
     website VARCHAR(255),
     email VARCHAR(255),
     phone VARCHAR(50),
