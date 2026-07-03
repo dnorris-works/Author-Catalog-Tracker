@@ -34,6 +34,22 @@ CREATE TABLE tracker.authors (
 );
 
 -- ============================================================
+-- Organizations (for book promotion outreach)
+-- ============================================================
+CREATE TABLE tracker.organizations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL,
+    contact TEXT,
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    website VARCHAR(255),
+    reach TEXT,
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================
 -- Distributors
 -- ============================================================
 CREATE TABLE tracker.distributors (
@@ -128,6 +144,10 @@ CREATE TRIGGER trg_authors_updated
 
 CREATE TRIGGER trg_distributors_updated
     BEFORE UPDATE ON tracker.distributors
+    FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();
+
+CREATE TRIGGER trg_organizations_updated
+    BEFORE UPDATE ON tracker.organizations
     FOR EACH ROW EXECUTE FUNCTION tracker.update_modified_column();
 
 CREATE TRIGGER trg_books_updated
